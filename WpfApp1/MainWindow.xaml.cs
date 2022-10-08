@@ -20,13 +20,29 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
+        TextBox textBox;
+        ActivityIndicator c;
         public MainWindow()
         {
             InitializeComponent();
-            var c = new ActivityIndicator(Brushes.DarkCyan);
+            c = new ActivityIndicator(Brushes.DarkCyan);
             layout.LastChildFill=true;
+            textBox = new TextBox();
+            layout.Children.Add(textBox);
+            DockPanel.SetDock(textBox,Dock.Bottom);
+            textBox.TextChanged += TextBox_TextChanged;
             layout.Children.Add(c);
             
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            float value = 1;
+            bool isVaild = float.TryParse(textBox.Text, out value);
+            if (isVaild)
+            {
+                c.xMax = value;
+            }
         }
     }
 }

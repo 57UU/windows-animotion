@@ -43,14 +43,14 @@ public partial class ActivityIndicator
     /// <summary>
     /// 坐标系的伸缩变换
     /// </summary>
-    public float scale = 150;
+    public float scale = 10;
     /// <summary>
     /// 是否启用DEBUG
     /// </summary>
     public bool isEnableDebug = false;
 
 
-    public ActivityIndicator(Brush color,int freshRate = 160, int point = 12)
+    public ActivityIndicator(Brush color,int freshRate = 60, int point = 12)
     {
         Brush = color;
         InitializeComponent();
@@ -159,7 +159,7 @@ public partial class ActivityIndicator
     //小球个数,Ps:小球坐标:即虚拟大球上的点到(0,-1)连线与x轴交点
     private int pointNumber;
     /// <summary>
-    /// array to store the X data
+    /// array which stores the X data
     /// </summary>
     private float[] values;
     /// <summary>
@@ -170,6 +170,13 @@ public partial class ActivityIndicator
     /// 相位
     /// </summary>
     private float φ0 = 0;
+
+
+
+    public float xMax=2;
+    
+    
+
     /// <summary>
     /// 计算位置，保存在values
     /// </summary>
@@ -181,20 +188,37 @@ public partial class ActivityIndicator
         {
             //从(0,-1)到点(用θ表示)的连线与X轴交点
             //float v = (float)Math.Sin(θ) / ((float)Math.Cos(θ) + 1);
-            float v = (float)MathF.Sin(θ) / (5*(float)MathF.Cos(θ) + 5);
+            float x0, y0;
+            x0 = xMax*(float)MathF.Cos(θ);
+            y0=(float)MathF.Sin(θ);
+
+            float v = x0 / (y0 + 1 );
             //convert: scale
             v *= scale;
  
             values[i] = v;
             if (isEnableDebug)
             {
-                actualBallsValus[i*2] = MathF.Sin(θ) * scale;
-                actualBallsValus[i * 2+1] = MathF.Cos(θ) * scale;
+                actualBallsValus[i*2] = x0 * scale;
+                actualBallsValus[i * 2+1] =y0 * scale;
+                //红线的坐标系与整体不同，要反转y轴
+                float y = -actualBallsValus[i * 2 + 1];
 
                 if (v < this.ActualWidth*10 && v > -(this.ActualWidth*10))
                 {
-                    actualBallsLine[i].X2 = actualBallsValus[i * 2 + 1]  + this.ActualWidth / 2;
-                    actualBallsLine[i].Y2 = actualBallsValus[i * 2] + this.ActualHeight / 2;
+                    if (Math.Abs(v) > Math.Abs(actualBallsValus[i * 2]))
+                    {
+                        setLocation(v, 0);
+                    }
+                    else
+                    {
+                        setLocation( actualBallsValus[i * 2], y);
+                    }
+                }
+                void setLocation(in float x,in float y)
+                {
+                    actualBallsLine[i].X2 = (x) + this.ActualWidth / 2;
+                    actualBallsLine[i].Y2 =y + this.ActualHeight / 2;
                 }
             }
         }
@@ -252,7 +276,7 @@ public partial class ActivityIndicator
             //再显示结果
             show();
             //相位递增，以表示大球旋转
-            φ0 += speed;
+            φ0 -= speed;
             if (φ0 > Pi2)
             {
                 φ0 -= Pi2;
